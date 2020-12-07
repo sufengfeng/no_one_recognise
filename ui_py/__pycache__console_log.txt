@@ -1,0 +1,9 @@
+=========================2020-11-18_04-14-35=========================
+Traceback (most recent call last):
+  File "C:/Users/Administrator.SC-201911172258/PycharmProjects/modbus/GTool.py", line 309, in editConfigFile
+    with open(config_path, "r") as j:
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/Administrator.SC-201911172258/PycharmProjects/modbus/ui_py/__pycache__project.json'
+Traceback (most recent call last):
+  File "C:/Users/Administrator.SC-201911172258/PycharmProjects/modbus/GTool.py", line 309, in editConfigFile
+    with open(config_path, "r") as j:
+FileNotFoundError: [Errno 2] No such file or directory: 'C:/Users/Administrator.SC-201911172258/PycharmProjects/modbus/ui_py/__pycache__project.json'

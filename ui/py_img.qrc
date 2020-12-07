@@ -1,0 +1,20 @@
+<RCC>
+  <qresource >
+    <file>images/board.png</file>
+    <file>images/board_choose.png</file>
+    <file>images/car01.png</file>
+    <file>images/car02.png</file>
+    <file>images/commander.png</file>
+    <file>images/convert.png</file>
+    <file>images/down.png</file>
+    <file>images/gis.png</file>
+    <file>images/lift.png</file>
+    <file>images/nosignal.jpg</file>
+    <file>images/plan01.png</file>
+    <file>images/plan02.png</file>
+    <file>images/right.png</file>
+    <file>images/shut.png</file>
+    <file>images/shuton.png</file>
+    <file>images/up.png</file>
+  </qresource>
+</RCC>

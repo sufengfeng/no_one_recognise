@@ -52,6 +52,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="checkBox_recongnise">
+        <property name="text">
+         <string>自动识别控制使能</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
          <string>云台远控</string>

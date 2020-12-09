@@ -3,8 +3,8 @@ from time import sleep
 
 import modbus_tk.modbus_tcp as mt
 import modbus_tk.defines as md
-
-from configure import Marviw_Port, Marviw_IP
+# /usr/bin/python
+import configparser
 
 SensorRigist01 = 64
 SensorRigist02 = 65
@@ -27,69 +27,69 @@ REGIST_ABSY02 = 35
 REGIST_ABSX_R02 = 36
 REGIST_ABSY_R02 = 37
 
-DORigest01_01=90
-DORigest01_02=91
-DORigest01_03=92
-DORigest01_04=93
+DORigest01_01 = 90
+DORigest01_02 = 91
+DORigest01_03 = 92
+DORigest01_04 = 93
+
+DORigest02_01 = 94
+DORigest02_02 = 95
+DORigest02_03 = 96
+DORigest02_04 = 97
+
+master = ""
+
+Marviw_IP = ""
+Marviw_Port = 0
+
+CameraIP = ""
+CameraPort = ""
+CameraUserName = ""
+CameraPassword = ""
 
 
-DORigest02_01=94
-DORigest02_02=95
-DORigest02_03=96
-DORigest02_04=97
+def InitGlobalParam():
+    global Marviw_IP
+    global Marviw_Port
 
-# def sendToSlave(param):
-#     global g_KeyData
-#     # 远程连接到服务器端
-#     master = mt.TcpMaster(Marviw_IP, Marviw_Port)
-#     master.set_timeout(5.0)
-#     value = {40, 30, 50, 60}
-#     Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=26,
-#                                 quantity_of_x=1,
-#                                 output_value=150)
-#     print(Hold_value)
-#     Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=27,
-#                                 quantity_of_x=1,
-#                                 output_value=151)
-#     print(Hold_value)
-#     Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=28,
-#                                 quantity_of_x=1,
-#                                 output_value=60)
-#     print(Hold_value)
-#     Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=29,
-#                                 quantity_of_x=1,
-#                                 output_value=-360)
-#     print(Hold_value)
-#     sleep(0.1)
+    global CameraIP
+    global CameraPort
+    global CameraUserName
+    global CameraPassword
 
-master = mt.TcpMaster(Marviw_IP, Marviw_Port)
-master.set_timeout(5.0)
+    cf = configparser.ConfigParser()
+    cf.read("configure.conf")
+    print(cf.sections())
+    print(cf.options("db"))
+
+    Marviw_IP = cf.get("db", "marviw_ip")
+
+    Marviw_Port = cf.getint("db", "marviw_port")
+
+    CameraIP = cf.get("db", "cameraip")
+    CameraPort = cf.getint("db", "cameraport")
+    CameraUserName = cf.get("db", "camerausername")
+    CameraPassword = cf.get("db", "camerapassword")
+    print(Marviw_IP, Marviw_Port, CameraIP, CameraPort)
 
 
-# 设置电机转动角度
-def modbusSetSpeed(speedx, stepx, speedy, stepy):
+g_KeyData = [1, 0, 32, 0, 4, 15, 0, 2, 0, 2, 0, 2, 255, 63, 255, 63, 130, 240, 128, 240, 129, 72, 195, 39, 197, 57, 8,
+             2, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+def init_modbus():
     global master
-    Hold_value = (0,)
+    global Marviw_IP
+    global Marviw_Port
     try:
-        Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=REGIST_SPEEDX,
-                                    quantity_of_x=1,
-                                    output_value=speedx)
-    except Exception as e:
-        print(e)
         master = mt.TcpMaster(Marviw_IP, Marviw_Port)
         master.set_timeout(5.0)
-
-    print(Hold_value)
-    try:
-        Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=REGIST_SPEEDY,
-                                    quantity_of_x=1,
-                                    output_value=speedy)
     except Exception as e:
         print(e)
-        master = mt.TcpMaster(Marviw_IP, Marviw_Port)
-        master.set_timeout(5.0)
-
-    print(Hold_value)
+        print("连接到RTE 错误")
+        print(Marviw_IP)
+        print(Marviw_Port)
+        exit(0)
 
 
 def modbusSetABS(regest, addValue):
@@ -102,6 +102,7 @@ def modbusSetABS(regest, addValue):
         print(e)
         master = mt.TcpMaster(Marviw_IP, Marviw_Port)
         master.set_timeout(5.0)
+        return
     print(Hold_value)
     value = Hold_value[0]
     if value > 32768:
@@ -115,14 +116,21 @@ def modbusSetABS(regest, addValue):
         print(e)
         master = mt.TcpMaster(Marviw_IP, Marviw_Port)
         master.set_timeout(5.0)
-        master.set_timeout(5.0)
+        return
     print(Hold_value)
 
 
 def modbusReadRist(rigest):
     global master
+    global Marviw_IP
+    global Marviw_Port
+    ip = Marviw_IP
+    port = Marviw_Port
     value = 0
     try:
+        # master = mt.TcpMaster(Marviw_IP, Marviw_Port)
+        # # master = mt.TcpMaster(ip, port)
+        # master.set_timeout(5.0)
         Hold_value = master.execute(slave=1, function_code=md.READ_HOLDING_REGISTERS, starting_address=rigest,
                                     quantity_of_x=1,
                                     output_value=0)
@@ -135,9 +143,11 @@ def modbusReadRist(rigest):
     value = Hold_value[0]
     return value
 
-def modbusWriteRist(rigest,value):
-    global master
 
+def modbusWriteRist(rigest, value):
+    global master
+    global Marviw_IP
+    global Marviw_Port
     try:
         Hold_value = master.execute(slave=1, function_code=md.WRITE_SINGLE_REGISTER, starting_address=rigest,
                                     quantity_of_x=1,
@@ -150,7 +160,7 @@ def modbusWriteRist(rigest,value):
     print(Hold_value)
     value = Hold_value[0]
 
+
 if __name__ == '__main__':
     pass
     # sendToSlave(1)
-

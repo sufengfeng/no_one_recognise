@@ -28,7 +28,7 @@
 # logger.critical("critical logging")
 
 
-# /usr/bin/python
+#/usr/bin/python
 # import configparser
 #
 # import string, os, sys
@@ -77,3 +77,32 @@
 # # modify one value and write to file
 # cf.set("db", "db_pass", "xgmtest")
 # cf.write(open("test.conf", "w"))
+
+# import modbus_tk.modbus_tcp as mt
+# import modbus_tk.defines as md
+#
+# master = mt.TcpMaster("192.168.3.164", 502)
+# master.set_timeout(5.0)
+# Hold_value=""
+# try:
+#     Hold_value = master.execute(slave=1, function_code=md.READ_HOLDING_REGISTERS, starting_address=26,
+#                                 quantity_of_x=1,
+#                                 output_value=0)
+# except Exception as e:
+#     print(e)
+# print(Hold_value)
+
+
+import cv2, numpy
+cam_addr = "rtsp://admin:123456@" + "192.168.3.172" + "/mpeg4cif"  # camera address
+print(cam_addr)
+cap = cv2.VideoCapture(cam_addr)
+
+while 1:
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.resize(frame, (900, 529))
+        cv2.imshow("img", frame)
+        cv2.waitKey(1)
+    else:
+        print(ret)

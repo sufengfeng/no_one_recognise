@@ -12,23 +12,23 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from configure import CameraIP
-from modbusMaster import modbusSetSpeed, modbusSetABS, modbusReadRist, SensorRigist01, SensorRigist02, SensorRigist03, \
+from modbusMaster import modbusSetABS, modbusReadRist, SensorRigist01, SensorRigist02, SensorRigist03, \
     SensorRigist04, SensorRigist05, modbusWriteRist, REGIST_ABSX02, REGIST_ABSY02, REGIST_ABSY01, REGIST_ABSX01, \
     DORigest02_01, DORigest01_01, DORigest02_02, DORigest01_02, DORigest02_03, DORigest01_03, DORigest02_04, \
-    DORigest01_04, Sensorauto
+    DORigest01_04, Sensorauto,  REGIST_SPEEDX02, REGIST_SPEEDY02, REGIST_SPEEDX01, REGIST_SPEEDY01, \
+    InitGlobalParam, init_modbus
 
 from setzoom import zoomtele, zoomstop, zoomwide, zoomcam
 from ui.main_window import Ui_MainWindow
 from ui_py.ui_gis import Gis_Form
 from ui_py.ui_setup import Setup_Form
+
 import ui.py_img
 
 g_nSpeedx = 30
 g_nStepx = 1
 g_nSpeedy = 30
 g_nStepy = 1
-TMPIMGFILE = ":/tmp.jpg"
 
 from mouse_qt import g_bScondEnable
 
@@ -37,7 +37,9 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(Main_Form, self).__init__()
         self.setupUi(self)
-
+        InitGlobalParam()
+        init_modbus()
+        #global "192.168.1.172"
         self.shut01Value = False
         self.shut02Value = False
         self.shut03Value = False
@@ -46,7 +48,6 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.m_bIsSensor = False  # 使能传感器
         self.m_bIsOpenVideo = False  # 使能视频
-
 
         self.label_img.setStyleSheet("border: 2px solid red")
         # self.pushButton_des.clicked.connect(self.On_DesClick)
@@ -133,7 +134,9 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.checkBox_hand.stateChanged.connect(self.changecb3)
         self.checkBox_plat.stateChanged.connect(self.changecb4)
         self.checkBox_auto.stateChanged.connect(self.changecb5)
-        self.cam = zoomcam(CameraIP)
+        self.checkBox_recongnise.stateChanged.connect(self.changecb6)
+
+        self.cam = zoomcam("192.168.1.172")
         self.pushButton_zoom01.clicked.connect(self.Zoom01)
         self.pushButton_zoom02.clicked.connect(self.Zoom02)
 
@@ -170,6 +173,12 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
             print(modbusWriteRist(Sensorauto, 1))
         elif self.checkBox_auto.checkState() == Qt.Unchecked:
             print(modbusWriteRist(Sensorauto, 0))
+
+    def changecb6(self):
+        if self.checkBox_recongnise.checkState() == Qt.Checked:
+            print("done")
+        elif self.checkBox_recongnise.checkState() == Qt.Unchecked:
+            print("not")
 
     def _up(self):
         global g_nSpeedx
@@ -216,7 +225,7 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
         # ui_motor.signal_SendParam.connect(self.receiveParam)
 
         self.form2_ = Gis_Form()
-        #form2_.setWindowModality(True)
+        # form2_.setWindowModality(True)
         self.form2_.show()
 
     def receiveParam(self, stepx, speedx, stepy, speedy, param05, param06):
@@ -229,7 +238,14 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
         g_nStepy = stepy
         g_nSpeedy = speedy
 
-        modbusSetSpeed(g_nSpeedx, g_nStepx, g_nSpeedy, g_nStepy)
+        global g_bScondEnable
+        if g_bScondEnable:
+            modbusWriteRist(REGIST_SPEEDX02,g_nSpeedx)
+            modbusWriteRist(REGIST_SPEEDY02,g_nSpeedy)
+        else:
+            modbusWriteRist(REGIST_SPEEDX01,g_nSpeedx)
+            modbusWriteRist(REGIST_SPEEDY01,g_nSpeedy)
+        # modbusSetSpeed(g_nSpeedx, g_nStepx, g_nSpeedy, g_nStepy)
 
     def _shut01(self):
         self.shut01Value = not self.shut01Value
@@ -254,6 +270,7 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
         pass
 
     def updateImg_thread(self, param):
+        #global "192.168.1.172"
         import cv2, numpy
 
         # show nosignal.jpg to init
@@ -261,10 +278,11 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_img.setGeometry(0, 0, pix.width(), pix.height())
         self.label_img.setPixmap(pix)
 
-        cam_addr = "rtsp://admin:123456@"+CameraIP+"/mpeg4cif" # camera address
-        preIsOpen = False # pre state is open or not
-        camOpened = False # cam is open or not
-        oldSize = {"width":0, "height":0}
+        cam_addr = "rtsp://admin:123456@" + "192.168.3.172" + "/mpeg4cif"  # camera address
+ #
+        preIsOpen = False  # pre state is open or not
+        camOpened = False  # cam is open or not
+        oldSize = {"width": 0, "height": 0}
         while True:
             if self.m_bIsOpenVideo and not preIsOpen:
                 # switch to Open from Close
@@ -293,7 +311,7 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.label_img.setGeometry(0, 0, pix.width(), pix.height())
                     self.label_img.setPixmap(pix)
                     if camOpened:
-                        cap.release() # close camera
+                        cap.release()  # close camera
                         camOpened = False
                     preIsOpen = False
                 else:
@@ -374,8 +392,6 @@ class Main_Form(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def Zoom02(self):
         self.cam.zoomtele(0.2)
-
-
 
 
 if __name__ == "__main__":

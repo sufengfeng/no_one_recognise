@@ -1,1 +1,1 @@
-#pyinstaller -F -i 1.ico UI_Main.py
+pyinstaller -F -i logo.ico mainwindow.py
